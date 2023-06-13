@@ -1,37 +1,29 @@
-import content from './content/content.json'
+import {Navigate, Route, Routes} from "react-router-dom";
+import Home from "./pages/Home/Home";
+import Profile from "./pages/Profile/Profile";
+import Login from "./pages/Login/Login";
+import Nav from "./components/Nav/Nav";
+import Register from "./pages/Register/Register";
+import './styles/global.css'
 import {useContext} from "react";
-import {LanguageContext} from "./context/LanguageContext";
 import {AuthContext} from "./context/AuthContext";
 
 function App() {
 
-    const { language, setLanguage } = useContext(LanguageContext)
-    const { isAuth, login, logout } = useContext(AuthContext)
-
-    const handleChange = (event) => {
-        setLanguage(event.target.value)
-    }
-
-    console.log(isAuth)
-
-    const title = content[language].homepage.title;
-    const paragraph = content[language].homepage.paragraph;
-    const welcome = content[language].homepage.welcome;
+    const {isAuth} = useContext(AuthContext);
 
     return (
-        <div>
-            <select value={ language } onChange={ handleChange }>
-                <option value="nl">NL 🇳🇱</option>
-                <option value="en">EN 🇬🇧</option>
-                <option value="fr">FR 🇫🇷</option>
-                <option value="es">ES 🇪🇸</option>
-            </select>
-            <h1>{title}</h1>
-            <p>{paragraph}</p>
-            <button type="button" onClick={ isAuth ? logout : login }>{ isAuth ? "Logout" : "Login"}</button>
-            { isAuth && <span>{welcome}</span> }
-        </div>
-    );
+        <>
+            <Nav/>
+            <Routes>
+                <Route path="/" element={<Home/>}/>
+                <Route path="/profile" element={isAuth ? <Profile/> : <Navigate to="/login"/> }/>
+                <Route path="/login" element={<Login/>}/>
+                <Route path="/register" element={<Register/>}/>
+            </Routes>
+        </>
+    )
+        ;
 }
 
 export default App;

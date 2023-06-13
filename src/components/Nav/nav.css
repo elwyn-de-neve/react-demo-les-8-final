@@ -1,0 +1,21 @@
+nav {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.8rem 3rem;
+    border-bottom: 1px solid #ccc;
+}
+
+nav ul,
+nav > div {
+    display: flex;
+    flex-direction: row;
+    gap: 1em;
+}
+
+nav li {
+    list-style: none;
+}
+
+nav a {
+ text-decoration: none;
+}
