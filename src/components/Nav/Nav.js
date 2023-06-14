@@ -18,7 +18,7 @@ function Nav() {
         <nav>
             <ul>
                 <li><Link to="/">Home</Link></li>
-                <li><Link to="/profile">Profiel</Link></li>
+                { isAuth && <li><Link to="/profile">Profiel</Link></li> }
             </ul>
             <div>
                 <select value={language} onChange={handleChange}>
