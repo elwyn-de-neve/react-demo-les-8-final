@@ -3,12 +3,12 @@ import {AuthContext} from "../../context/AuthContext";
 
 function Profile() {
 
-    const { user: { email } } = useContext(AuthContext);
+    const { user: { username } } = useContext(AuthContext);
 
     return (
         <main>
             <h1>Profile</h1>
-            <p>Welcome <span>{ email }</span></p>
+            <p>Welcome <span>{ username }</span></p>
         </main>
     );
 }

@@ -1,38 +1,71 @@
-import {createContext, useState} from "react";
+import {createContext, useEffect, useState} from "react";
 import {useNavigate} from "react-router-dom";
 import jwt_decode from "jwt-decode";
+import {checkTokenValidity} from "../helper/checkTokenValidity";
+import axios from "axios";
 
 export const AuthContext = createContext(null)
 
 function AuthContextProvider({children}) {
 
-    // Stap 1: Maak een state object aan voor de authenticatie
+    // Stap 5: Maak een state aan om de pagina status bij te houden (pending, done)
     const [auth, setAuth] = useState({
         isAuth: false,
         user: null,
+        status: "pending"
     });
     const navigate = useNavigate();
 
-    // Stap 2: Pas de verwijzingen naar de state aan (ook bij je logout functie)
-    // Stap 5: Token ontvangen en decoderen
-    // Stap 6: Token opslaan in de local storage en verwijderen bij logout
-    // Stap 7: Gebruiker ophalen met de token
-    // Stap 8: Zet gebruikers info in de state (NIET DE JWT TOKEN)
-    function login(jwt_token) {
+    // Stap 1: Gebruik useEffect om te checken of er een token in de localstorage zit
+    // Stap 2: Als er een token in de localstorage zit, check dan of deze nog geldig is (checkTokenValidity)
+    // Stap 3: Als de token nog geldig is, log de gebruiker in
+    // Stap 4: Als de token niet meer geldig is, log de gebruiker uit
+    // Stap 7: Haal de user data op uit de database en sla deze op in de state
+    // Stap 8: Geef een redirect mee (optioneel)
+
+    useEffect(() => {
+        const storedToken = localStorage.getItem('token');
+
+        if (storedToken && checkTokenValidity(storedToken)) {
+            void login(storedToken)
+        } else {
+            void logout()
+        }
+
+    }, [])
+
+    async function login(jwt_token, redirect) {
         const decodedToken = jwt_decode(jwt_token);
         localStorage.setItem('token', jwt_token);
-        // Indien niet alle gebruikers info met login wordt verstuurd, kan je deze hier ophalen
         console.log(decodedToken)
-        setAuth({
-            ...auth,
-            isAuth: true,
-            user: {
-                email: decodedToken.email,
-                id: decodedToken.sub
-            }
-        })
-        console.log('De gebruiker is ingelogd 🔓')
-        navigate('/profile')
+        try {
+            const {
+                data: {
+                    email,
+                    username,
+                    id
+                }
+            } = await axios.get(`http://localhost:3000/600/users/${decodedToken.sub}`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${jwt_token}`
+                }
+            })
+            setAuth({
+                ...auth,
+                isAuth: true,
+                user: {
+                    email,
+                    id,
+                    username
+                },
+                status: "done"
+            })
+            console.log('De gebruiker is ingelogd 🔓')
+            if (redirect) navigate(redirect);
+        } catch (e) {
+            console.error(e)
+        }
     }
 
     function logout() {
@@ -40,13 +73,13 @@ function AuthContextProvider({children}) {
         setAuth({
             ...auth,
             isAuth: false,
-            user: null
+            user: null,
+            status: "done"
         })
         console.log('De gebruiker is uitgelogd 🔒')
         navigate('/')
     }
 
-    // Stap: 9: Geef ook de user mee aan de context
     const data = {
         isAuth: auth.isAuth,
         user: auth.user,
@@ -54,9 +87,10 @@ function AuthContextProvider({children}) {
         login: login
     }
 
+    // Stap 6: Check of de pagina status pending is, als dit zo is, laat dan een loading icoon zien
     return (
         <AuthContext.Provider value={data}>
-            {children}
+            {auth.status === "done" ? children : <p>loading...</p>}
         </AuthContext.Provider>
     );
 }

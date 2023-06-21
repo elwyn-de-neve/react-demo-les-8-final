@@ -17,7 +17,7 @@ function Login() {
                 password
             });
             // Stap 4: Geef de JWT mee aan de login functie
-            login(res.data.accessToken);
+            login(res.data.accessToken, '/profile');
         } catch (e) {
             console.error("Onjuist email en wachtwoord combinatie ⛔", e)
             // Hier je error handling in de UI
